@@ -1,18 +1,24 @@
 package redisqueue
 
 import (
-	"syscall"
+	"fmt"
+	"github.com/stretchr/testify/require"
+	"os"
+	"os/exec"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewSignalHandler(t *testing.T) {
 	t.Run("closes the returned channel on SIGINT", func(tt *testing.T) {
 		ch := newSignalHandler()
+		// 获取当前进程的 PID
+		pid := os.Getpid()
 
-		err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		// 发送 SIGINT 信号给当前进程
+		cmd := exec.Command("kill", "-SIGINT", fmt.Sprintf("%d", pid))
+		err := cmd.Run()
+		//err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 		require.NoError(tt, err)
 
 		select {
